@@ -50,12 +50,12 @@ trainers = [
 
 trained_models = [trainer.train(X_text, y_text) for trainer in trainers]
 
-best_model = max(trained_models, key=lambda m: m.score)
-logging.info("Best model was %s with %f score" % (best_model.model_family, best_model.score))
+best_trainer = max(trained_models, key=lambda m: m.score)
+logging.info("Best model was %s with %f score" % (best_trainer.model_family, best_trainer.score))
 
-print(best_model.model)
+print(best_trainer.model)
 
 with open(args.model, "w") as model_file:
-    model_file.write(pickle.dumps(best_model.model))
+    model_file.write(pickle.dumps(best_trainer.model))
 
 logging.info("Pickled and saved model to %s" % args.model)

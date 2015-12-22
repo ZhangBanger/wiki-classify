@@ -10,7 +10,7 @@ from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import Binarizer
 
-n_folds = 5  # Use 5 stratified folds for 80/20 CV
+n_folds = 3  # Use 5 stratified folds for 80/20 CV
 verbose = 1  # Log some progress
 n_jobs = -1  # Use all cores
 
@@ -22,6 +22,9 @@ class Trainer(object):
 
     def __init__(self, search_cv):
         self.model = search_cv
+        self.model.cv = n_folds
+        self.model.verbose = verbose
+        self.model.n_jobs = n_jobs
         self.model_family = self.__class__.__name__.replace("Trainer", "")
         self.score = None
 
@@ -53,11 +56,9 @@ class MultinomialNBTrainer(Trainer):
                     "classifier__alpha": stats.expon(0.5),
                     "classifier__fit_prior": [True, False],
                 },
-                cv=n_folds,
-                n_iter=40,  # iterations of randomized hyper-parameter search
-                verbose=verbose,
-                n_jobs=n_jobs,
+                n_iter=40,
         )
+
         super(MultinomialNBTrainer, self).__init__(search_cv)
 
 
@@ -76,11 +77,9 @@ class BernoulliNBTrainer(Trainer):
                     "classifier__alpha": stats.expon(0.5),
                     "classifier__fit_prior": [True, False],
                 },
-                cv=n_folds,
-                n_iter=30,  # iterations of randomized hyper-parameter search
-                verbose=verbose,
-                n_jobs=n_jobs,
+                n_iter=30,
         )
+
         super(BernoulliNBTrainer, self).__init__(search_cv)
 
 
@@ -103,11 +102,9 @@ class LinearModelTrainer(Trainer):
                     "classifier__l1_ratio": [0.1, 0.15, 0.2],
                     "classifier__alpha": [0.0001, 0.001, 0.01],
                 },
-                cv=n_folds,
-                n_iter=50,  # iterations of randomized hyper-parameter search
-                verbose=verbose,
-                n_jobs=n_jobs,
+                n_iter=50,
         )
+
         super(LinearModelTrainer, self).__init__(search_cv)
 
 
@@ -130,9 +127,7 @@ class RandomForestTrainer(Trainer):
                     "classifier__min_samples_leaf": [1, 2, 3],
                     "classifier__class_weight": [None, "balanced"],
                 },
-                cv=n_folds,
-                n_iter=50,  # iterations of randomized hyper-parameter search
-                verbose=verbose,
-                n_jobs=n_jobs,
+                n_iter=50,
         )
+
         super(RandomForestTrainer, self).__init__(search_cv)
