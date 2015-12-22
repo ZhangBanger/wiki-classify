@@ -1,6 +1,8 @@
-import requests
+import logging
+import re
 
-from utils import preprocess_wiki_text
+import requests
+from gensim.corpora import wikicorpus
 
 wiki_api_base = 'https://en.wikipedia.org/w/api.php?'
 
@@ -11,6 +13,8 @@ category_query = wiki_api_base + \
                  '&cmlimit=50&cmtype=page&cmtitle=Category:%s&cmcontinue=%s'
 # Placeholders for page ids
 article_query = wiki_api_base + 'action=query&format=json&prop=revisions&rvprop=content&pageids=%s'
+
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 
 def get_and_save_text(categories, data_dir):
@@ -24,13 +28,13 @@ def get_and_save_text(categories, data_dir):
         for category in categories:
             continue_param = '-||'
 
-            print("\tCollecting data for category: %s" % category)
+            logging.info("Collecting data for category: %s" % category)
 
             batch_count = 0
 
             # Get data in batches per wiki api limit
             while continue_param:
-                print("\t\tProcessing batch: %i" % batch_count)
+                logging.debug("Processing batch: %i" % batch_count)
                 batch_count += 1
 
                 # Continue query and update continue_param
@@ -55,6 +59,19 @@ def get_and_save_text(categories, data_dir):
                     X_file.write(preprocessed_text + "\n")
                     y_file.write(category + "\n")
 
-    print("Saved dataset to %s as X.txt and y.txt" % data_dir)
+    logging.info("Saved data to %s as X.txt and y.txt" % data_dir)
 
     return x_text, y_text
+
+
+def filter_additional_items(text):
+    text = re.sub(r"={2,}.*?={2,}", " ", text)
+    text = text.replace("\n", " ")
+    text = text.encode("utf-8")
+    return text
+
+
+def preprocess_wiki_text(wiki_text):
+    text = wikicorpus.filter_wiki(wiki_text)
+    text = filter_additional_items(text)
+    return text
