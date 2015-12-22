@@ -20,7 +20,7 @@ categories = [
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--data", help="dir to save or load existing X.txt, y.txt", default=os.getcwd())
-parser.add_argument("-m", "--model", help="path to save model pipeline", default="%s/model.pickle" % os.getcwd())
+parser.add_argument("-m", "--model", help="path to save model pipeline", default="%s/model.pkl" % os.getcwd())
 args = parser.parse_args()
 
 logging.info("Collecting data for all categories")
@@ -38,9 +38,6 @@ else:
 
 logging.info("Collected %i examples across %i categories" % (len(X_text), len(categories)))
 
-# Collect models keyed by name
-models = {}
-
 # Try different trainers (model pipelines)
 # For each trainer, use randomized search CV
 # Return CV score and refitted classifier
@@ -50,13 +47,15 @@ trainers = [
     LinearModelTrainer(),
     RandomForestTrainer(),
 ]
-for trainer in trainers:
-    models[trainer.model_family] = trainer.train(X_text, y_text)
 
-best_model = max(models.iteritems(), key=lambda k, v: v["score"])
-logging.info(best_model)
+trained_models = [trainer.train(X_text, y_text) for trainer in trainers]
+
+best_model = max(trained_models, key=lambda m: m.score)
+logging.info("Best model was %s with %f score" % (best_model.model_family, best_model.score))
+
+print(best_model.model)
 
 with open(args.model, "w") as model_file:
-    model_file.write(pickle.dumps(best_model))
+    model_file.write(pickle.dumps(best_model.model))
 
 logging.info("Pickled and saved model to %s" % args.model)

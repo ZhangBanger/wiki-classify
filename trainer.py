@@ -21,17 +21,20 @@ class Trainer(object):
     """Base class for running an sklearn pipeline + cross validator"""
 
     def __init__(self, search_cv):
-        self.search_cv = search_cv
+        self.model = search_cv
         self.model_family = self.__class__.__name__.replace("Trainer", "")
+        self.score = None
 
     def train(self, x_text, y_text):
         logging.info("Performing Randomized Search over %s Models" % self.model_family)
-        self.search_cv.fit(x_text, y_text)
-        logging.info("Best Model Found: %s" % repr(self.search_cv.best_estimator_))
-        logging.info("Best Model Score: %f" % self.search_cv.best_score_)
-        logging.info("Best Model Hyper-parameters: %s" % self.search_cv.best_params_)
+        self.model.fit(x_text, y_text)
+        logging.info("Best Model Found: %s" % repr(self.model.best_estimator_))
+        logging.info("Best Model Score: %f" % self.model.best_score_)
+        logging.info("Best Model Hyper-parameters: %s" % self.model.best_params_)
 
-        return {"score": self.search_cv.best_score_, "model": self.search_cv.best_estimator_}
+        self.score = self.model.best_score_
+
+        return self
 
 
 class MultinomialNBTrainer(Trainer):
