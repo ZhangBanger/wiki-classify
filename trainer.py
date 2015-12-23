@@ -11,7 +11,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 
 n_iter = 50
-# scoring = "f1_macro"
+scoring = "f1_macro"
 n_folds = 4  # Use 4 stratified folds for 60/20/20 split (80% cv fold, 20% held out)
 verbose = 1  # Log some progress
 n_jobs = -1  # Use all cores
@@ -28,7 +28,7 @@ class Trainer(object):
         self.model.verbose = verbose
         self.model.n_jobs = n_jobs
         self.model.n_iter = n_iter
-        # self.model.scoring = scoring
+        self.model.scoring = scoring
         self.model_family = self.__class__.__name__.replace("Trainer", "")
         self.score = None
 
@@ -118,7 +118,7 @@ class KNNTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "classifier__n_neighbors": stats.uniform(2, 10),
+                    "classifier__n_neighbors": [i for i in range(2, 10)],
                     "classifier__weights": ["uniform", "distance"],
                 },
         )
