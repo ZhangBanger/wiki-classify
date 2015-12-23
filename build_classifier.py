@@ -12,7 +12,7 @@ categories = [category.rstrip() for category in open("%s/categories.txt" % os.ge
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--data", help="dir to save or load existing X.txt, y.txt", default=os.getcwd())
-parser.add_argument("-t", "--trainer", help="path to save trainer", default="%s/trainer.pkl" % os.getcwd())
+parser.add_argument("-m", "--model", help="path to save model", default="%s/model.pkl" % os.getcwd())
 args = parser.parse_args()
 
 logging.info("Collecting data for all categories")
@@ -42,12 +42,13 @@ trainers = [
     RandomForestTrainer(),
 ]
 
-trained_models = [trainer.train(X_text, y_text) for trainer in trainers]
+for trainer in trainers:
+    trainer.train(X_text, y_text)
 
-best_trainer = max(trained_models, key=lambda m: m.score)
+best_trainer = max(trainers, key=lambda m: m.score)
 logging.info("Best model was %s with %f score" % (best_trainer.model_family, best_trainer.score))
 
-with open(args.trainer, "w") as f:
-    f.write(pickle.dumps(best_trainer))
+with open(args.model, "w") as f:
+    f.write(pickle.dumps(best_trainer.model.best_estimator_))
 
-logging.info("Pickled and saved trainer to %s" % args.trainer)
+logging.info("Pickled and saved model to %s" % args.model)

@@ -8,9 +8,10 @@ from sklearn.grid_search import RandomizedSearchCV
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import Binarizer
 
-n_folds = 3  # Use 5 stratified folds for 80/20 CV
+n_iter = 50
+scoring = "f1_macro"
+n_folds = 4  # Use 4 stratified folds for 60/20/20 split (80% cv fold, 20% held out)
 verbose = 1  # Log some progress
 n_jobs = -1  # Use all cores
 
@@ -25,19 +26,19 @@ class Trainer(object):
         self.model.cv = n_folds
         self.model.verbose = verbose
         self.model.n_jobs = n_jobs
+        self.model.n_iter = n_iter
+        self.model.scoring = scoring
         self.model_family = self.__class__.__name__.replace("Trainer", "")
         self.score = None
 
     def train(self, x_text, y_text):
-        logging.info("Performing Randomized Search over %s Models" % self.model_family)
+        logging.info("Performing Randomized Search over %s Parameters" % self.model_family)
         self.model.fit(x_text, y_text)
-        logging.info("Best Model Found: %s" % repr(self.model.best_estimator_))
-        logging.info("Best Model Score: %f" % self.model.best_score_)
-        logging.info("Best Model Hyper-parameters: %s" % self.model.best_params_)
+
+        logging.info("Best Score: %f" % self.model.best_score_)
+        logging.info("Best Hyperparameters: %s" % self.model.best_params_)
 
         self.score = self.model.best_score_
-
-        return self
 
 
 class MultinomialNBTrainer(Trainer):
@@ -53,10 +54,9 @@ class MultinomialNBTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "classifier__alpha": stats.expon(0.5),
+                    "classifier__alpha": stats.expon(scale=1.0),
                     "classifier__fit_prior": [True, False],
                 },
-                n_iter=40,
         )
 
         super(MultinomialNBTrainer, self).__init__(search_cv)
@@ -66,18 +66,16 @@ class BernoulliNBTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", CountVectorizer(stop_words="english")),
-            ("binarizer", Binarizer()),
             ("classifier", BernoulliNB()),
         ])
 
         search_cv = RandomizedSearchCV(
                 pipeline,
                 param_distributions={
-                    "binarizer__threshold": [1, 2, 3, 5],
-                    "classifier__alpha": stats.expon(0.5),
+                    "classifier__alpha": stats.expon(scale=1.0),
+                    "classifier__binarize": stats.uniform(0, 5),
                     "classifier__fit_prior": [True, False],
                 },
-                n_iter=30,
         )
 
         super(BernoulliNBTrainer, self).__init__(search_cv)
@@ -99,10 +97,9 @@ class LinearModelTrainer(Trainer):
                     "vectorizer__sublinear_tf": [True, False],
                     "classifier__loss": ['hinge', 'log', 'perceptron'],
                     "classifier__penalty": [None, 'l1', 'l2', 'elasticnet'],
-                    "classifier__l1_ratio": [0.1, 0.15, 0.2],
-                    "classifier__alpha": [0.0001, 0.001, 0.01],
+                    "classifier__l1_ratio": stats.uniform(0, 1),
+                    "classifier__alpha": stats.expon(scale=0.1),
                 },
-                n_iter=50,
         )
 
         super(LinearModelTrainer, self).__init__(search_cv)
@@ -122,12 +119,11 @@ class RandomForestTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "classifier__n_estimators": [5, 10, 15, 20],
+                    "classifier__n_estimators": stats.randint(low=5, high=30),
                     "classifier__criterion": ["gini", "entropy"],
-                    "classifier__min_samples_leaf": [1, 2, 3],
+                    "classifier__min_samples_leaf": stats.randint(low=1, high=5),
                     "classifier__class_weight": [None, "balanced"],
                 },
-                n_iter=50,
         )
 
         super(RandomForestTrainer, self).__init__(search_cv)
