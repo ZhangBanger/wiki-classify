@@ -1,5 +1,6 @@
 import logging
 import re
+from urllib import quote
 
 import requests
 from gensim.corpora import wikicorpus
@@ -14,6 +15,8 @@ category_query = wiki_api_base + \
                  '&cmlimit=50&cmtype=page&cmtitle=Category:%s&cmcontinue=%s'
 # Placeholders for page ids
 article_query = wiki_api_base + 'action=query&format=json&prop=revisions&rvprop=content&pageids=%s'
+
+title_query = wiki_api_base + 'action=query&format=json&prop=revisions&rvprop=content&titles=%s'
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 
@@ -53,26 +56,35 @@ def get_and_save_text(categories, data_dir, test_size=0.2):
             articles = [page['revisions'][0]['*'] for _, page in article_resp['query']['pages'].iteritems()]
             for text in articles:
                 preprocessed_text = preprocess_wiki_text(text)
-                x_text.append(preprocessed_text + "\n")
-                y_text.append(category + "\n")
+                x_text.append(preprocessed_text)
+                y_text.append(category)
 
     x_train, x_test, y_train, y_test = train_test_split(x_text, y_text, test_size=test_size, stratify=y_text)
 
     with open("%s/X_train.txt" % data_dir, "w") as f:
-        f.writelines(x_train)
+        f.write('\n'.join(x_train) + "\n")
 
     with open("%s/X_test.txt" % data_dir, "w") as f:
-        f.writelines(x_test)
+        f.write('\n'.join(x_test) + "\n")
 
     with open("%s/y_train.txt" % data_dir, "w") as f:
-        f.writelines(y_train)
+        f.write('\n'.join(y_train) + "\n")
 
     with open("%s/y_test.txt" % data_dir, "w") as f:
-        f.writelines(y_test)
+        f.write('\n'.join(y_test) + "\n")
 
     logging.info("Saved data to %s as X_train.txt, X_test.txt, y_train.txt, and y_test.txt" % data_dir)
 
     return x_train, y_train
+
+
+def get_article_by_title(title):
+    title = quote(title)
+    article_resp = requests.get(title_query % title).json()
+    # Might bomb out here - could use helpful error msg
+    article_raw = article_resp['query']['pages'].items()[0][1]['revisions'][0]["*"]
+
+    return preprocess_wiki_text(article_raw)
 
 
 def filter_additional_items(text):

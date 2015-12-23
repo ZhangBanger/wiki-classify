@@ -25,8 +25,8 @@ test_size = 0.2
 if os.path.isfile("%s/X_train.txt" % args.data) and os.path.isfile("%s/y_train.txt" % args.data):
     logging.info("Found data in %s: " % args.data)
     with open("%s/X_train.txt" % args.data) as X_file, open("%s/y_train.txt" % args.data) as y_file:
-        X_text = X_file.readlines()
-        y_text = y_file.readlines()
+        X_text = X_file.read().splitlines()
+        y_text = y_file.read().splitlines()
 else:
     X_text, y_text = get_and_save_text(categories, args.data, test_size)
 
