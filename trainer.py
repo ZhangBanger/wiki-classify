@@ -7,10 +7,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 
 n_iter = 50
-scoring = "f1_macro"
+# scoring = "f1_macro"
 n_folds = 4  # Use 4 stratified folds for 60/20/20 split (80% cv fold, 20% held out)
 verbose = 1  # Log some progress
 n_jobs = -1  # Use all cores
@@ -27,7 +28,7 @@ class Trainer(object):
         self.model.verbose = verbose
         self.model.n_jobs = n_jobs
         self.model.n_iter = n_iter
-        self.model.scoring = scoring
+        # self.model.scoring = scoring
         self.model_family = self.__class__.__name__.replace("Trainer", "")
         self.score = None
 
@@ -81,11 +82,11 @@ class BernoulliNBTrainer(Trainer):
         super(BernoulliNBTrainer, self).__init__(search_cv)
 
 
-class LinearModelTrainer(Trainer):
+class LogisticRegressionTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("classifier", SGDClassifier()),
+            ("classifier", SGDClassifier(loss="log", penalty="elasticnet")),
         ])
 
         search_cv = RandomizedSearchCV(
@@ -95,14 +96,34 @@ class LinearModelTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "classifier__loss": ['hinge', 'log', 'perceptron'],
-                    "classifier__penalty": [None, 'l1', 'l2', 'elasticnet'],
                     "classifier__l1_ratio": stats.uniform(0, 1),
                     "classifier__alpha": stats.expon(scale=0.1),
                 },
         )
 
-        super(LinearModelTrainer, self).__init__(search_cv)
+        super(LogisticRegressionTrainer, self).__init__(search_cv)
+
+
+class KNNTrainer(Trainer):
+    def __init__(self):
+        pipeline = Pipeline([
+            ("vectorizer", TfidfVectorizer(stop_words="english")),
+            ("classifier", KNeighborsClassifier(loss="log", penalty="elasticnet")),
+        ])
+
+        search_cv = RandomizedSearchCV(
+                pipeline,
+                param_distributions={
+                    "vectorizer__binary": [True, False],
+                    "vectorizer__norm": ['l1', 'l2', None],
+                    "vectorizer__use_idf": [True, False],
+                    "vectorizer__sublinear_tf": [True, False],
+                    "classifier__n_neighbors": stats.uniform(2, 10),
+                    "classifier__weights": ["uniform", "distance"],
+                },
+        )
+
+        super(KNNTrainer, self).__init__(search_cv)
 
 
 class RandomForestTrainer(Trainer):

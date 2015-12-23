@@ -3,7 +3,7 @@ import logging
 import os
 import pickle
 
-from trainer import MultinomialNBTrainer, BernoulliNBTrainer, LinearModelTrainer, RandomForestTrainer
+from trainer import MultinomialNBTrainer, BernoulliNBTrainer, LogisticRegressionTrainer, RandomForestTrainer, KNNTrainer
 from wiki_utils import get_and_save_text
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -38,8 +38,9 @@ logging.info("Collected %i examples across %i categories" % (len(X_text), len(ca
 trainers = [
     MultinomialNBTrainer(),
     BernoulliNBTrainer(),
-    LinearModelTrainer(),
+    LogisticRegressionTrainer(),
     RandomForestTrainer(),
+    KNNTrainer(),
 ]
 
 for trainer in trainers:
