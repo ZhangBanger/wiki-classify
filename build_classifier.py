@@ -3,7 +3,8 @@ import logging
 import os
 import pickle
 
-from trainer import MultinomialNBTrainer, BernoulliNBTrainer, LogisticRegressionTrainer, RandomForestTrainer, KNNTrainer
+from trainer import MultinomialNBTrainer, BernoulliNBTrainer, LogisticRegressionTrainer, RandomForestTrainer, KNNTrainer, \
+    AdaBoostTrainer
 from wiki_utils import get_and_save_text
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -41,6 +42,7 @@ trainers = [
     LogisticRegressionTrainer(),
     RandomForestTrainer(),
     KNNTrainer(),
+    AdaBoostTrainer(),
 ]
 
 for trainer in trainers:

@@ -1,7 +1,7 @@
 import logging
 
 from scipy import stats
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.linear_model import SGDClassifier
@@ -147,3 +147,25 @@ class RandomForestTrainer(Trainer):
         )
 
         super(RandomForestTrainer, self).__init__(search_cv)
+
+
+class AdaBoostTrainer(Trainer):
+    def __init__(self):
+        pipeline = Pipeline([
+            ("vectorizer", TfidfVectorizer(stop_words="english")),
+            ("classifier", AdaBoostClassifier()),
+        ])
+
+        search_cv = RandomizedSearchCV(
+                pipeline,
+                param_distributions={
+                    "vectorizer__binary": [True, False],
+                    "vectorizer__norm": ['l1', 'l2', None],
+                    "vectorizer__use_idf": [True, False],
+                    "vectorizer__sublinear_tf": [True, False],
+                    "classifier__n_estimators": stats.randint(low=20, high=100),
+                    "classifier__learning_rate": [.1, .5, 1, 1.5],
+                },
+        )
+
+        super(AdaBoostTrainer, self).__init__(search_cv)
