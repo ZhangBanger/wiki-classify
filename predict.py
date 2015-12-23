@@ -20,14 +20,11 @@ except NoArticleError as e:
     print e
     exit(1)
 
-print("Prediction for %s :" % args.title)
-
 top_prediction = model.predict([article_text])[0]
-
 prediction_dist = model.predict_proba([article_text])
-
 prediction_dist_labeled = dict(zip(classes, prediction_dist[0]))
-print("Best prediction: %s" % top_prediction)
+
+print("Best prediction for '%s': %s" % (args.title, top_prediction))
 print("Prediction distribution")
-for category, probability in prediction_dist_labeled.iteritems():
+for category, probability in sorted(prediction_dist_labeled.iteritems(), key=lambda item: item[1], reverse=True):
     print ("%s -> %.2f" % (category, probability))

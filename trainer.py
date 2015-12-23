@@ -1,4 +1,3 @@
-# Settings for pipeline and hyper-parameter search
 import logging
 
 from scipy import stats
