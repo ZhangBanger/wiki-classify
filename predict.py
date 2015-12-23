@@ -2,7 +2,7 @@ import argparse
 import os
 import pickle
 
-from wiki_utils import get_article_by_title
+from wiki_utils import get_article_by_title, NoArticleError
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-m", "--model", help="path to save model", default="%s/model.pkl" % os.getcwd())
@@ -12,7 +12,13 @@ args = parser.parse_args()
 model = pickle.load(open(args.model))
 classes = model.steps[1][1].classes_
 
-article_text = get_article_by_title(args.title)
+article_text = None
+
+try:
+    article_text = get_article_by_title(args.title)
+except NoArticleError as e:
+    print e
+    exit(1)
 
 print("Prediction for %s :" % args.title)
 

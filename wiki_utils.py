@@ -21,6 +21,10 @@ title_query = wiki_api_base + 'action=query&format=json&prop=revisions&rvprop=co
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 
+class NoArticleError(Exception):
+    pass
+
+
 def get_and_save_text(categories, data_dir, test_size=0.2):
     # Collect pairs of text, label
     x_text = []
@@ -79,10 +83,13 @@ def get_and_save_text(categories, data_dir, test_size=0.2):
 
 
 def get_article_by_title(title):
-    title = quote(title)
-    article_resp = requests.get(title_query % title).json()
-    # Might bomb out here - could use helpful error msg
-    article_raw = article_resp['query']['pages'].items()[0][1]['revisions'][0]["*"]
+    quoted_title = quote(title)
+    article_resp = requests.get(title_query % quoted_title).json()
+
+    try:
+        article_raw = article_resp['query']['pages'].items()[0][1]['revisions'][0]["*"]
+    except KeyError:
+        raise NoArticleError("Title '%s' does not exist" % title)
 
     return preprocess_wiki_text(article_raw)
 
