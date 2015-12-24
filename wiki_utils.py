@@ -26,9 +26,11 @@ class NoArticleError(Exception):
 
 
 def get_and_save_text(categories, data_dir, test_size=0.2):
-    # Collect pairs of text, label
+    # Collect pairs of text, labels
     x_text = []
     y_text = []
+    category_map = {}
+    article_map = {}
 
     # Get text examples for all categories
     # Write results to file
@@ -52,16 +54,26 @@ def get_and_save_text(categories, data_dir, test_size=0.2):
                 # Finished
                 continue_param = None
 
-            # This will bomb out if query is empty, which is what we want
             page_ids = [page['pageid'] for page in category_resp['query']['categorymembers']]
 
-            # Get all article text in batch and append to scraped_text
-            article_resp = requests.get(article_query % "|".join(map(str, page_ids))).json()
-            articles = [page['revisions'][0]['*'] for _, page in article_resp['query']['pages'].iteritems()]
-            for text in articles:
+            old_pages = [page_id for page_id in page_ids if page_id not in category_map]
+            for page_id in old_pages:
+                category_map[page_id].add(category)
+
+            new_pages = [page_id for page_id in page_ids if page_id in category_map]
+            for page_id in new_pages:
+                category_map[page_id] = {category}
+
+            # Get all new article text in batch
+            article_resp = requests.get(article_query % "|".join(map(str, new_pages))).json()
+            articles = [page['revisions'][0]['*'] for page_id, page in article_resp['query']['pages'].iteritems()]
+            for page_id, text in articles:
                 preprocessed_text = preprocess_wiki_text(text)
-                x_text.append(preprocessed_text)
-                y_text.append(category)
+                article_map[page_id] = preprocessed_text
+
+    for page_id, text in article_map.iteritems():
+        x_text.append(text)
+        y_text.append(",".join(category_map[page_id]))
 
     x_train, x_test, y_train, y_test = train_test_split(x_text, y_text, test_size=test_size, stratify=y_text)
 
