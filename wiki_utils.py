@@ -75,6 +75,7 @@ def get_and_save_text(categories, data_dir, test_size=0.2):
         x_text.append(text)
         y_text.append(",".join(category_map[page_id]))
 
+    # Can no longer stratify due to multi-label
     x_train, x_test, y_train, y_test = train_test_split(x_text, y_text, test_size=test_size)
 
     with open("%s/X_train.txt" % data_dir, "w") as f:
