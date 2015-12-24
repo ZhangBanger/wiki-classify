@@ -1,13 +1,16 @@
 import logging
 
 from scipy import stats
+from sklearn.cross_validation import KFold
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.linear_model import SGDClassifier
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MultiLabelBinarizer
 
 n_iter = 50
 scoring = "f1_macro"
@@ -45,7 +48,7 @@ class MultinomialNBTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("classifier", MultinomialNB()),
+            ("classifier", OneVsRestClassifier(MultinomialNB())),
         ])
         search_cv = RandomizedSearchCV(
                 pipeline,
@@ -54,8 +57,8 @@ class MultinomialNBTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "classifier__alpha": stats.expon(scale=1.0),
-                    "classifier__fit_prior": [True, False],
+                    "classifier__estimator__alpha": stats.expon(scale=1.0),
+                    "classifier__estimator__fit_prior": [True, False],
                 },
         )
 
@@ -66,15 +69,15 @@ class BernoulliNBTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", CountVectorizer(stop_words="english")),
-            ("classifier", BernoulliNB()),
+            ("classifier", OneVsRestClassifier(BernoulliNB())),
         ])
 
         search_cv = RandomizedSearchCV(
                 pipeline,
                 param_distributions={
-                    "classifier__alpha": stats.expon(scale=1.0),
-                    "classifier__binarize": stats.uniform(0, 5),
-                    "classifier__fit_prior": [True, False],
+                    "classifier__estimator__alpha": stats.expon(scale=1.0),
+                    "classifier__estimator__binarize": stats.uniform(0, 5),
+                    "classifier__estimator__fit_prior": [True, False],
                 },
         )
 
@@ -85,7 +88,7 @@ class LogisticRegressionTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("classifier", SGDClassifier(loss="log", penalty="elasticnet")),
+            ("classifier", OneVsRestClassifier(SGDClassifier(loss="log", penalty="elasticnet"))),
         ])
 
         search_cv = RandomizedSearchCV(
@@ -95,8 +98,8 @@ class LogisticRegressionTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "classifier__l1_ratio": stats.uniform(0, 1),
-                    "classifier__alpha": stats.expon(scale=0.1),
+                    "classifier__estimator__l1_ratio": stats.uniform(0, 1),
+                    "classifier__estimator__alpha": stats.expon(scale=0.1),
                 },
         )
 
@@ -135,10 +138,8 @@ class RandomForestTrainer(Trainer):
         search_cv = RandomizedSearchCV(
                 pipeline,
                 param_distributions={
-                    "vectorizer__binary": [True, False],
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
-                    "vectorizer__sublinear_tf": [True, False],
                     "classifier__n_estimators": stats.randint(low=5, high=30),
                     "classifier__criterion": ["gini", "entropy"],
                     "classifier__min_samples_leaf": stats.randint(low=1, high=5),
@@ -153,18 +154,16 @@ class AdaBoostTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("classifier", AdaBoostClassifier()),
+            ("classifier", OneVsRestClassifier(AdaBoostClassifier())),
         ])
 
         search_cv = RandomizedSearchCV(
                 pipeline,
                 param_distributions={
-                    "vectorizer__binary": [True, False],
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
-                    "vectorizer__sublinear_tf": [True, False],
-                    "classifier__n_estimators": stats.randint(low=20, high=100),
-                    "classifier__learning_rate": stats.expon(scale=1.0),
+                    "classifier__estimator__n_estimators": stats.randint(low=20, high=100),
+                    "classifier__estimator__learning_rate": stats.expon(scale=1.0),
                 },
         )
 
