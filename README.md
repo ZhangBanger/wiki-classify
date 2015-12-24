@@ -48,9 +48,9 @@ You can extend this list of models the system tries to fit by adding new modelin
 However, whatever underlying `Estimator` you use must implement the `predict_proba()` method.
 
 If you look at my other branches (like `svd`) and a few past commits, you'll see other pipeline elements that were attempted but didn't make the cut.
-Some examples include SVMs with various kernels, as well as decomposition steps like SVD, LDA, and NMF.
-None of the decomposition methods worked particularly well, and they came at the cost of significant CPU time.
-Although hinge-loss SVMs were close to Logistic Regression in performance, they face a similar issue; only the inefficient implementation with supra-quadratic running time supports `predict_proba()`. In any case, they're known to generate particularly bad "probability" estimates that require a lot of calibration.
+Some examples include SVMs with various kernels, bigrams, and decomposition steps like SVD, LDA, and NMF.
+None of the methods offered any improvement, some significantly worsened it, and all of them incurred more training time by adding costly steps and introducing more hyperparameters to optimize.
+For example, hinge-loss SVMs were close to Logistic Regression in performance, but only the inefficient implementation with supra-quadratic running time supports `predict_proba()`. In any case, they're known to generate particularly bad "probability" estimates that require a lot of calibration.
 
 ### Try predictions
 
