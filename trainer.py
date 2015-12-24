@@ -1,6 +1,7 @@
 import logging
 
 from scipy import stats
+from sklearn.decomposition import TruncatedSVD
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.grid_search import RandomizedSearchCV
@@ -85,6 +86,7 @@ class LogisticRegressionTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
+            ("decomposer", TruncatedSVD()),
             ("classifier", SGDClassifier(loss="log", penalty="elasticnet")),
         ])
 
@@ -95,6 +97,7 @@ class LogisticRegressionTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
+                    "decomposer__n_components": [50, 100, 200],
                     "classifier__l1_ratio": stats.uniform(0, 1),
                     "classifier__alpha": stats.expon(scale=0.1),
                 },
@@ -107,6 +110,7 @@ class KNNTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
+            ("decomposer", TruncatedSVD()),
             ("classifier", KNeighborsClassifier(loss="log", penalty="elasticnet")),
         ])
 
@@ -117,6 +121,7 @@ class KNNTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
+                    "decomposer__n_components": [50, 100, 200],
                     "classifier__n_neighbors": [i for i in range(2, 10)],
                     "classifier__weights": ["uniform", "distance"],
                 },
@@ -129,6 +134,7 @@ class RandomForestTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
+            ("decomposer", TruncatedSVD()),
             ("classifier", RandomForestClassifier()),
         ])
 
@@ -139,6 +145,7 @@ class RandomForestTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
+                    "decomposer__n_components": [50, 100, 200],
                     "classifier__n_estimators": stats.randint(low=5, high=30),
                     "classifier__criterion": ["gini", "entropy"],
                     "classifier__min_samples_leaf": stats.randint(low=1, high=5),
@@ -153,6 +160,7 @@ class AdaBoostTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
+            ("decomposer", TruncatedSVD()),
             ("classifier", AdaBoostClassifier()),
         ])
 
@@ -163,6 +171,7 @@ class AdaBoostTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
+                    "decomposer__n_components": [50, 100, 200],
                     "classifier__n_estimators": stats.randint(low=20, high=100),
                     "classifier__learning_rate": [.1, .5, 1, 1.5],
                 },
