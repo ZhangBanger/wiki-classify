@@ -3,9 +3,9 @@ import logging
 from scipy import stats
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.grid_search import RandomizedSearchCV, GridSearchCV
+from sklearn.grid_search import RandomizedSearchCV
 from sklearn.linear_model import SGDClassifier
-from sklearn.naive_bayes import MultinomialNB, BernoulliNB, GaussianNB
+from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 
@@ -60,25 +60,6 @@ class MultinomialNBTrainer(Trainer):
         )
 
         super(MultinomialNBTrainer, self).__init__(search_cv)
-
-
-class GaussianNBTrainer(Trainer):
-    def __init__(self):
-        pipeline = Pipeline([
-            ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("classifier", GaussianNB()),
-        ])
-        search_cv = GridSearchCV(
-                pipeline,
-                param_grid={
-                    "vectorizer__binary": [True, False],
-                    "vectorizer__norm": ['l1', 'l2', None],
-                    "vectorizer__use_idf": [True, False],
-                    "vectorizer__sublinear_tf": [True, False],
-                },
-        )
-
-        super(GaussianNBTrainer, self).__init__(search_cv)
 
 
 class BernoulliNBTrainer(Trainer):
