@@ -25,7 +25,7 @@ top_prediction = binarizer.inverse_transform(model.predict([article_text]))[0]
 prediction_dist = model.predict_proba([article_text])
 prediction_dist_labeled = dict(zip(classes, prediction_dist[0]))
 
-print("Best prediction for '%s': %s" % (args.title, top_prediction[0] if top_prediction else ""))
-print("Prediction distribution")
+print("Tags for '%s': %s" % (args.title, ",".join(top_prediction) if top_prediction else ""))
+print("Tag probabilities")
 for category, probability in sorted(prediction_dist_labeled.iteritems(), key=lambda item: item[1], reverse=True):
     print ("%s -> %.2f" % (category, probability))
