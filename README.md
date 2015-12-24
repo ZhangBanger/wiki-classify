@@ -19,7 +19,7 @@ $ cat > categories.txt
 * Build your classifier
 
 ```bash
-$ python build_classifier.py -m $(pwd)/model.pkl -d $(pwd)
+$ python build_classifier.py -m $(pwd) -d $(pwd)
 2015-12-23 18:55:25,401 Collecting data for all categories
 2015-12-23 18:55:25,402 Found data in /Users/andy/code/python/wiki-classify:
 2015-12-23 18:55:25,412 Collected 928 examples across 7 categories
@@ -57,7 +57,7 @@ For example, hinge loss SVMs were close to Logistic Regression in performance, b
 * Point to the model used for prediction
 
 ```bash
-$ python predict.py -m $(pwd)/model.pkl -t "Monstrous birth"
+$ python predict.py -m $(pwd) -t "Monstrous birth"
 Tags for 'Monstrous birth': Congenital_disorders
 Tag probabilities
 Congenital_disorders -> 0.80
