@@ -69,3 +69,15 @@ Organs_(anatomy) -> 0.10
 Cancer -> 0.10
 Machine_learning_algorithms -> 0.05
 ```
+
+## Future Work
+
+### Multiclass to Multilabel
+
+You might have noticed that some of the categories overlap. The evaluation metrics in the Jupyter Notebooks shows that the model is especially bad at discriminating in these cases, but it's actually because the problem formulation isn't quite right.
+
+Some work needs to be done in the pipeline to support multiple labels per example. We need to maintain a mapping of article ids to sets of labels, so when we encounter the same article in a different category, we add the category to the label set. Effectively, we're generating tagged articles as examples.
+
+#### Labeled LDA
+
+With the new formulation in mind, it's worth trying labeled LDA to see if any interesting results come about. See [this paper](http://www-nlp.stanford.edu/cmanning/papers/llda-emnlp09.pdf).
