@@ -1,7 +1,6 @@
 import logging
 
 from scipy import stats
-from sklearn.cross_validation import KFold
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.grid_search import RandomizedSearchCV
@@ -10,7 +9,6 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MultiLabelBinarizer
 
 n_iter = 50
 scoring = "f1_macro"

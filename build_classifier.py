@@ -64,7 +64,7 @@ for trainer in trainers:
 best_trainer = max(trainers, key=lambda m: m.score)
 logging.info("Best model was %s with %f score" % (best_trainer.model_family, best_trainer.score))
 
-with open(args.model, "w") as f:
+with open("%s/model.pkl" % args.model, "w") as f:
     f.write(pickle.dumps(best_trainer.model.best_estimator_))
 
 logging.info("Pickled and saved model to %s/model.pkl" % args.model)
