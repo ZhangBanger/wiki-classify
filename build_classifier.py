@@ -3,8 +3,8 @@ import logging
 import os
 import pickle
 
-from trainer import MultinomialNBTrainer, BernoulliNBTrainer, LogisticRegressionTrainer, RandomForestTrainer, KNNTrainer, \
-    AdaBoostTrainer
+from trainer import MultinomialNBTrainer, BernoulliNBTrainer, LogisticRegressionTrainer, RandomForestTrainer, \
+    KNNTrainer, AdaBoostTrainer, GaussianNBTrainer
 from wiki_utils import get_and_save_text
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -37,13 +37,13 @@ logging.info("Collected %i examples across %i categories" % (len(X_text), len(ca
 # For each trainer, use randomized search CV
 # Return CV score and refitted classifier
 trainers = [
-    # MultinomialNBTrainer(),
-    # BernoulliNBTrainer(),
-    # GaussianNBTrainer(),
+    MultinomialNBTrainer(),
+    BernoulliNBTrainer(),
+    GaussianNBTrainer(),
     LogisticRegressionTrainer(),
-    # RandomForestTrainer(),
-    # KNNTrainer(),
-    # AdaBoostTrainer(),
+    RandomForestTrainer(),
+    KNNTrainer(),
+    AdaBoostTrainer(),
 ]
 
 for trainer in trainers:

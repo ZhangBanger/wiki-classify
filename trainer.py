@@ -1,10 +1,9 @@
 import logging
 
 from scipy import stats
-from sklearn.decomposition import TruncatedSVD, NMF, LatentDirichletAllocation
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.grid_search import RandomizedSearchCV
+from sklearn.grid_search import RandomizedSearchCV, GridSearchCV
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB, BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -69,9 +68,9 @@ class GaussianNBTrainer(Trainer):
             ("vectorizer", TfidfVectorizer(stop_words="english")),
             ("classifier", GaussianNB()),
         ])
-        search_cv = RandomizedSearchCV(
+        search_cv = GridSearchCV(
                 pipeline,
-                param_distributions={
+                param_grid={
                     "vectorizer__binary": [True, False],
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
@@ -105,7 +104,6 @@ class LogisticRegressionTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("decomposer", LatentDirichletAllocation()),
             ("classifier", SGDClassifier(loss="log", penalty="elasticnet")),
         ])
 
@@ -116,7 +114,6 @@ class LogisticRegressionTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "decomposer__n_topics": [10, 20, 30],
                     "classifier__l1_ratio": stats.uniform(0, 1),
                     "classifier__alpha": stats.expon(scale=0.1),
                 },
@@ -129,7 +126,6 @@ class KNNTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("decomposer", TruncatedSVD()),
             ("classifier", KNeighborsClassifier()),
         ])
 
@@ -140,7 +136,6 @@ class KNNTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "decomposer__n_components": [25, 50, 75],
                     "classifier__n_neighbors": [i for i in range(2, 10)],
                     "classifier__weights": ["uniform", "distance"],
                 },
@@ -153,7 +148,6 @@ class RandomForestTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("decomposer", TruncatedSVD()),
             ("classifier", RandomForestClassifier()),
         ])
 
@@ -164,7 +158,6 @@ class RandomForestTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "decomposer__n_components": [25, 50, 75],
                     "classifier__n_estimators": stats.randint(low=5, high=30),
                     "classifier__criterion": ["gini", "entropy"],
                     "classifier__min_samples_leaf": stats.randint(low=1, high=5),
@@ -179,7 +172,6 @@ class AdaBoostTrainer(Trainer):
     def __init__(self):
         pipeline = Pipeline([
             ("vectorizer", TfidfVectorizer(stop_words="english")),
-            ("decomposer", TruncatedSVD()),
             ("classifier", AdaBoostClassifier()),
         ])
 
@@ -190,9 +182,8 @@ class AdaBoostTrainer(Trainer):
                     "vectorizer__norm": ['l1', 'l2', None],
                     "vectorizer__use_idf": [True, False],
                     "vectorizer__sublinear_tf": [True, False],
-                    "decomposer__n_components": [25, 50, 75],
                     "classifier__n_estimators": stats.randint(low=20, high=100),
-                    "classifier__learning_rate": [.1, .5, 1, 1.5],
+                    "classifier__learning_rate": stats.expon(scale=1.0),
                 },
         )
 
