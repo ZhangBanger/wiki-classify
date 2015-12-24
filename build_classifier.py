@@ -37,12 +37,13 @@ logging.info("Collected %i examples across %i categories" % (len(X_text), len(ca
 # For each trainer, use randomized search CV
 # Return CV score and refitted classifier
 trainers = [
-    MultinomialNBTrainer(),
-    BernoulliNBTrainer(),
+    # MultinomialNBTrainer(),
+    # BernoulliNBTrainer(),
+    # GaussianNBTrainer(),
     LogisticRegressionTrainer(),
-    RandomForestTrainer(),
-    KNNTrainer(),
-    AdaBoostTrainer(),
+    # RandomForestTrainer(),
+    # KNNTrainer(),
+    # AdaBoostTrainer(),
 ]
 
 for trainer in trainers:
